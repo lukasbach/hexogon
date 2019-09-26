@@ -14,6 +14,8 @@ import {EventEmitter} from "./events/EventEmitter";
 import {LineDrawingInterpolation} from "./LineDrawingInterpolation";
 import {CoordinateUtils} from "./coordinates/CoordinateUtils";
 import {CubeCoordinates} from "./coordinates/CubeCoordinates";
+import {HorizontalRelativePosition} from "./options/HorizontalRelativePosition";
+import {VerticalRelativePosition} from "./options/VerticalRelativePosition";
 
 export interface IHexogonGridOptions<HexogonState> {
   orientation?: Orientation;
@@ -26,10 +28,12 @@ export interface IHexogonGridOptions<HexogonState> {
 
 export class HexogonGrid<HexogonState extends object = {}> {
   private storage: GridStorage<HexogonState>;
-  private orientation: Orientation;
   private offset: PixelPosition;
-  private hexogonSize: number;
   private spacing: number;
+  private boundingBoxTopLeft: PixelPosition;
+  private boundingBoxBottomRight: PixelPosition;
+  public readonly orientation: Orientation;
+  public readonly hexogonSize: number;
 
   public readonly events = {
     hexogonStateChange: new EventEmitter<{
@@ -43,6 +47,10 @@ export class HexogonGrid<HexogonState extends object = {}> {
     removedHexogon: new EventEmitter<{
       hexogon: Hexogon<HexogonState>;
     }>(),
+    boundingBoxChange: new EventEmitter<{
+      topLeftPixel: PixelPosition,
+      bottomRightPixel: PixelPosition
+    }>(),
   };
 
   constructor(private options: IHexogonGridOptions<HexogonState> = {}) {
@@ -50,6 +58,9 @@ export class HexogonGrid<HexogonState extends object = {}> {
     this.offset = options.offset || new PixelPosition(0, 0);
     this.hexogonSize = options.hexogonSize || 24;
     this.spacing = options.spacing || 0;
+
+    this.boundingBoxTopLeft = new PixelPosition(9999, 9999);
+    this.boundingBoxBottomRight = new PixelPosition(-9999, -9999);
 
     const storageType = options.storage || GridStorageType.Sparse;
 
@@ -188,7 +199,20 @@ export class HexogonGrid<HexogonState extends object = {}> {
     }));
   }
 
+  public newHexogon(options: Omit<IHexagonOptions, 'spacing' | 'size' | 'orientation'>, initialState: HexogonState) {
+    const hex = new Hexogon({
+      ...options,
+      spacing: this.spacing,
+      size: this.hexogonSize,
+      orientation: this.orientation,
+      offset: this.offset
+    }, initialState);
+    this.storeHexogons(hex);
+    return hex;
+  }
+
   public storeHexogons(...hexogons: Array<Hexogon<HexogonState>>) {
+    let hasBoundingBoxChanged = false;
     this.storage.store(...hexogons);
 
     for (const hex of hexogons) {
@@ -196,7 +220,57 @@ export class HexogonGrid<HexogonState extends object = {}> {
       hex.events.stateChange.on(payload => this.events.hexogonStateChange.emit({
         changedHexogon: hex,
         ...payload
-      }))
+      }));
+
+      const pp = hex.centerPixelPosition;
+      const bbTop = pp.getVerticalRelativePosition(this.boundingBoxTopLeft);
+      const bbBottom = pp.getVerticalRelativePosition(this.boundingBoxBottomRight);
+      const bbLeft = pp.getHorizontalRelativePosition(this.boundingBoxTopLeft);
+      const bbRight = pp.getHorizontalRelativePosition(this.boundingBoxBottomRight);
+
+      if (bbTop !== VerticalRelativePosition.Same || bbBottom !== VerticalRelativePosition.Same
+        || bbLeft !== HorizontalRelativePosition.Same || bbRight !== HorizontalRelativePosition.Same) {
+        // TODO performance improvement, do not check hPos/vPos before, just update bounding box and then check if change
+        hasBoundingBoxChanged = true;
+
+        if (bbLeft === HorizontalRelativePosition.Left) {
+          this.boundingBoxTopLeft.x = pp.x;
+        }
+        if (bbRight === HorizontalRelativePosition.Right) {
+          this.boundingBoxBottomRight.x = pp.x;
+        }
+        if (bbTop === VerticalRelativePosition.Above) {
+          this.boundingBoxTopLeft.y = pp.y;
+        }
+        if (bbBottom === VerticalRelativePosition.Below) {
+          this.boundingBoxBottomRight.y = pp.y;
+        }
+      }
+    }
+
+    if (hasBoundingBoxChanged) {
+      this.events.boundingBoxChange.emit({
+        bottomRightPixel: this.boundingBoxBottomRight,
+        topLeftPixel: this.boundingBoxTopLeft
+      });
+    }
+  }
+
+  /**
+   * Get rectangular bounding box data about all hexogons in the grid. You can use this to find out how big
+   * and where the grid contents are.
+   *
+   * Warning: This does not respect any offsets used when rendering the grid, as the offset information is
+   * only stored in the renderer. To get the bounding box information with respect to offsets, call
+   * {@link AbstractRenderer#getBoundingBox} with the grid as parameter. Note that the Canvas- and the
+   * SVG-Renderer use offsets by default to center the grid.
+   */
+  public getBoundingBox(): { topLeft: PixelPosition, bottomRight: PixelPosition, width: number, height: number } {
+    return {
+      topLeft: this.boundingBoxTopLeft,
+      bottomRight: this.boundingBoxBottomRight,
+      width: this.boundingBoxBottomRight.x - this.boundingBoxTopLeft.x,
+      height: this.boundingBoxBottomRight.y - this.boundingBoxTopLeft.y
     }
   }
 

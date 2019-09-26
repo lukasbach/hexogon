@@ -2,18 +2,16 @@
   "name": "hexogon",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "start-storybook -p 6006",
+    "build:lib": "tsc --project ./tsconfig.prod.json",
     "build:storybook": "build-storybook",
     "build:typedoc": "typedoc /src"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "hexogon-docs-examples": "^1.0.0"
-  },
   "devDependencies": {
     "@babel/core": "^7.6.0",
     "@documentalist/compiler": "^2.3.0",

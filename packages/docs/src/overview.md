@@ -6,4 +6,4 @@ title: 'Overview'
 
 Overview
 
-@example example.ts
+@example example

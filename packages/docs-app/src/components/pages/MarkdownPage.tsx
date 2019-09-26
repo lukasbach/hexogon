@@ -6,6 +6,7 @@ import {useDocsData, useReroute, useUrlParam} from "../../hooks";
 import {orderReference} from "../../orderReferenceData";
 import {SymbolLink} from "../common/ui";
 import {LeftBar, LeftBarHeader, LeftBarItem} from "../common/LeftBar";
+import {Example} from "../common/Example";
 
 const StyledContainer = styled.div({});
 
@@ -45,7 +46,7 @@ export const MarkdownPage: React.FC<{
             } else {
               switch (contentPart.tag) {
                 case 'example':
-                  return contentPart.value;
+                  return <Example exampleId={contentPart.value}/>;
                 case 'interface':
                   return 'Inline Interface. TODO';
                 case 'page':

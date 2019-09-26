@@ -6,6 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "@documentalist/client": "^2.1.0",
+    "hexogon": "^1.0.0",
     "hexogon-docs-examples": "^1.0.0"
   },
   "scripts": {

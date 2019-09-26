@@ -29,8 +29,10 @@ export class CanvasRenderer<HexogonState extends object = {}> extends AbstractRe
   }
 
   protected renderStyledHexagon(hex: Hexogon<HexogonState>, style: IHexogonRenderingStyles, text?: string) {
-    const [firstCorner, ...otherCorners] = hex.corners.map(c =>
-      this.options.offset ? c.subtract(this.options.offset).arr : c.arr);
+    const [firstCorner, ...otherCorners] = hex.corners
+      .map(c => this.options.offset ? c.subtract(this.options.offset) : c)
+      .map(c => c.add(new PixelPosition(.5, .5)))
+      .map(c => c.arr);
     this.ctx.beginPath();
     this.ctx.moveTo(...firstCorner);
 

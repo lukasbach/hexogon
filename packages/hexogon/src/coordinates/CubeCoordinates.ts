@@ -4,9 +4,11 @@ import {OffsetCoordinatesType} from "../options/OffsetCoordinatesType";
 import {Orientation} from "../options/Orientation";
 import {OffsetCoordinates} from "./OffsetCoordinates";
 import {CoordinateConversion} from "./CoordinateConversion";
-import instantiate = WebAssembly.instantiate;
 import {LazyCoordinateConstructor} from "./LazyCoordinateConstructor";
-import {Hexogon} from "../Hexogon";
+import {VerticalRelativePosition} from "../options/VerticalRelativePosition";
+import {HorizontalRelativePosition} from "../options/HorizontalRelativePosition";
+import {PixelPosition} from "../PixelPosition";
+import {Utils} from "../Utils";
 
 export class CubeCoordinates implements ICoordinates {
   get x() {
@@ -158,5 +160,51 @@ export class CubeCoordinates implements ICoordinates {
       Math.abs(this._y - coords.y),
       Math.abs(this._z - coords.z),
     );
+  }
+
+  getVerticalRelativePosition(toCoords: ICoordinates, orientation: Orientation): VerticalRelativePosition {
+    return this.getCenterPixelPosition(orientation, 5, 0)
+      .getVerticalRelativePosition(toCoords.toCubeCoordinates().getCenterPixelPosition(orientation, 5));
+
+    /*const cube = toCoords.toCubeCoordinates();
+    if (orientation === Orientation.Pointy) {
+      return cube.z < this.z ? VerticalRelativePosition.Above : cube.z === this.z
+        ? VerticalRelativePosition.Same : VerticalRelativePosition.Below;
+    } else {
+      // TODO
+    }*/
+  }
+
+  getHorizontalRelativePosition(toCoords: ICoordinates, orientation: Orientation): HorizontalRelativePosition {
+    return this.getCenterPixelPosition(orientation, 5, 0)
+      .getHorizontalRelativePosition(toCoords.toCubeCoordinates().getCenterPixelPosition(orientation, 5));
+    /*const cube = toCoords.toCubeCoordinates();
+    if (orientation === Orientation.Pointy) {
+      // TODO
+    } else {
+      return cube.x < this.x ? HorizontalRelativePosition.Left : cube.x === this.x
+        ? HorizontalRelativePosition.Same : HorizontalRelativePosition.Right;
+    }*/
+  }
+
+  getCenterPixelPosition(orientation: Orientation, size: number, spacing: number = 0): PixelPosition {
+    switch (orientation) {
+      case Orientation.Flat:
+        return new PixelPosition(
+          size * (3/2 * this.x),
+          size * (Utils.Sqrt3 / 2 * this.x + Utils.Sqrt3 * this.y),
+        )
+          .add(new PixelPosition(this.x, this.y).multiply(spacing));
+      case Orientation.Pointy:
+        return new PixelPosition(
+          size * (Utils.Sqrt3 * this.x + Utils.Sqrt3/2 * this.y),
+          size * (3/2 * this.y),
+        )
+          .add(new PixelPosition(this.x, this.y).multiply(spacing));
+    }
+  }
+
+  toId(): string {
+    return `hexogon-cc-${this.x}-${this.y}-${this.z}`;
   }
 }

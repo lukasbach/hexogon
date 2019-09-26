@@ -12,4 +12,5 @@ export interface ICoordinates {
   toOffsetCoordinates(type: OffsetCoordinatesType, orientation: Orientation): OffsetCoordinates;
   equal(coords: ICoordinates): boolean;
   clone(): ICoordinates;
+  toId(): string;
 }

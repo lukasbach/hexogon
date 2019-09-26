@@ -120,12 +120,15 @@ export const ReferenceSymbolPage: React.FC<{}> = props => {
                     </SubtleCardTitle>
                     <SubtleCardContent>
                       { method.signatures.map(sig => (
-                        <MethodSignature key={sig.type}>
-                          ({sig.parameters.map(p =>
-                            <MethodSignatureKeyword key={p.type}>{p.name}</MethodSignatureKeyword>)})
-                          {' '}=>{' '}
-                          <MethodSignatureKeyword>{ sig.returnType }</MethodSignatureKeyword>
-                        </MethodSignature>
+                        <>
+                          <MethodSignature key={sig.type}>
+                            ({sig.parameters.map(p =>
+                              <MethodSignatureKeyword key={p.type}>{p.name}</MethodSignatureKeyword>)})
+                            {' '}=>{' '}
+                            <MethodSignatureKeyword>{ sig.returnType }</MethodSignatureKeyword>
+                          </MethodSignature>
+                          <div dangerouslySetInnerHTML={{__html: sig.documentation ? sig.documentation.contents.join('') : ''}} />
+                        </>
                       )) }
 
                       <div dangerouslySetInnerHTML={{__html: method.documentation ? method.documentation.contents.join('') : ''}} />

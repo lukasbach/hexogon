@@ -55,32 +55,23 @@ export class Hexogon<State extends object = {}> {
   get state(): State { return this._state; }
 
   get centerPixelPosition(): PixelPosition {
-    switch (this.orientation) {
+    /*switch (this.orientation) {
       case Orientation.Flat:
-        /*return new PixelPosition(
-          .75 * this.width * this.cubeCoordinates.y,
-          0.5 * this.height * this.cubeCoordinates.y
-        ).add(this.options.offset);*/
-
         return new PixelPosition(
           this.size * (3/2 * this.cubeCoordinates.x),
           this.size * (Utils.Sqrt3 / 2 * this.cubeCoordinates.x + Utils.Sqrt3 * this.cubeCoordinates.y),
         )
-          .add(new PixelPosition(this.coordinates.x, this.coordinates.y).multiply(this.options.spacing || 1))
+          .add(new PixelPosition(this.coordinates.x, this.coordinates.y).multiply(this.options.spacing || 0))
           .add(this.options.offset);
       case Orientation.Pointy:
-        /*return new PixelPosition(
-          .5 * this.width * this.cubeCoordinates.y,
-          0.75 * this.height * this.cubeCoordinates.y
-        ).add(this.options.offset);*/
-
         return new PixelPosition(
           this.size * (Utils.Sqrt3 * this.cubeCoordinates.x + Utils.Sqrt3/2 * this.cubeCoordinates.y),
           this.size * (3/2 * this.cubeCoordinates.y),
         )
           .add(new PixelPosition(this.coordinates.x, this.coordinates.y).multiply(this.options.spacing || 0))
           .add(this.options.offset);
-    }
+    }*/
+    return this.cubeCoordinates.getCenterPixelPosition(this.orientation, this.size, this.options.spacing || 0);
   }
 
   get corners(): [PixelPosition, PixelPosition, PixelPosition, PixelPosition, PixelPosition, PixelPosition] {

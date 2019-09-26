@@ -2,8 +2,5 @@
   "name": "hexogon-docs",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
-  "dependencies": {
-    "hexogon-docs-examples": "^1.0.0"
-  }
+  "license": "MIT"
 }

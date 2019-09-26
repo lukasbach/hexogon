@@ -40,7 +40,7 @@ export const HtmlStyledContainer = styled.div({
     fontWeight: 900,
     textTransform: 'uppercase',
     width: '100%',
-  }
+  },
 });
 
 export const Tag = styled.div({

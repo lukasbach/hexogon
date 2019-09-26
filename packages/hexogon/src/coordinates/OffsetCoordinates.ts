@@ -57,4 +57,8 @@ export class OffsetCoordinates implements ICoordinates {
   toArray(): [number, number] {
     return [this.q, this.r];
   }
+
+  toId(): string {
+    return this.toCubeCoordinates().toId();
+  }
 }
